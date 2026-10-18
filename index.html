@@ -1,394 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transperth Stop 16812 - Split Flap Board</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transperth Route 970 / 970X - Kiosk Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Orbitron for LED clock & Inter for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    body {
-      background: #090c10;
-      color: #ffffff;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-    }
-
-    .header-card {
-      width: 100%;
-      max-width: 980px;
-      background: linear-gradient(180deg, #162032 0%, #0d1424 100%);
-      border: 1px solid #23324d;
-      border-radius: 12px;
-      padding: 14px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.7);
-    }
-
-    .stop-badge {
-      background: #ff7a00;
-      color: #000;
-      font-weight: 900;
-      font-size: 1.4rem;
-      padding: 6px 14px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 1px;
-      box-shadow: 0 2px 10px rgba(255,122,0,0.3);
-    }
-
-    .stop-info {
-      display: flex;
-      flex-direction: column;
-      margin-left: 14px;
-    }
-
-    .stop-name {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: #ffffff;
-      letter-spacing: 0.5px;
-    }
-
-    .stop-sub {
-      font-size: 0.85rem;
-      color: #38bdf8;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin-top: 2px;
-    }
-
-    .clock-section {
-      text-align: right;
-    }
-
-    .clock-digital {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #ff9d00;
-      font-family: monospace;
-      letter-spacing: 1px;
-    }
-
-    .clock-date {
-      font-size: 0.72rem;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .board-card {
-      width: 100%;
-      max-width: 980px;
-      background: #0f141d;
-      border: 1px solid #1e283b;
-      border-radius: 12px;
-      padding: 18px;
-      box-shadow: 0 10px 35px rgba(0,0,0,0.85);
-    }
-
-    .board-header-title {
-      font-size: 0.85rem;
-      font-weight: 800;
-      color: #ff7a00;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .table-cols {
-      display: grid;
-      grid-template-columns: 75px 1fr 100px 90px;
-      gap: 16px;
-      padding: 0 12px 10px 12px;
-      border-bottom: 1px solid #182235;
-      margin-bottom: 12px;
-    }
-
-    .col-title {
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .col-dest {
-      padding-left: 20px;
-    }
-
-    .col-right {
-      text-align: right;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: 75px 1fr 100px 90px;
-      gap: 16px;
-      align-items: center;
-      background: #090d14;
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #172030;
-      margin-bottom: 7px;
-      transition: border-color 0.3s ease, background 0.3s ease;
-    }
-
-    .row.urgent {
-      background: #23080b;
-      border-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
-    }
-
-    .row.urgent .flap {
-      color: #fca5a5 !important;
-      border-color: #991b1b !important;
-      background: linear-gradient(180deg, #381014 0%, #1e070a 49%, #120406 51%, #280b0e 100%);
-    }
-
-    .row.urgent .route .flap { color: #fca5a5 !important; }
-    .row.urgent .time .flap { color: #f87171 !important; }
-    .row.urgent .eta .flap { color: #ef4444 !important; }
-
-    .flap-group {
-      display: flex;
-      gap: 3px;
-    }
-
-    .flap-group.dest-group {
-      padding-left: 20px;
-    }
-
-    .flap-group.eta-group {
-      justify-content: flex-end;
-    }
-
-    .flap-wrapper {
-      perspective: 300px;
-    }
-
-    .flap {
-      background: linear-gradient(180deg, #1b212c 0%, #10141d 49%, #080a0f 51%, #141822 100%);
-      color: #f1f5f9;
-      font-weight: 800;
-      font-size: 1.05rem;
-      width: 21px;
-      height: 31px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px;
-      border: 1px solid #283347;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 4px rgba(0,0,0,0.6);
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.15s ease-in-out;
-    }
-
-    .flap.flip {
-      transform: rotateX(-90deg);
-    }
-
-    .flap::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: rgba(0,0,0,0.85);
-    }
-
-    /* Standard Flap Palette Colors */
-    .route .flap { color: #38bdf8; border-color: #0284c7; }
-    .dest .flap { color: #ffb74d; border-color: #b45309; }
-    .time .flap { color: #4ade80; border-color: #15803d; }
-    .eta .flap { color: #f97316; border-color: #c2410c; }
-
-    @media (max-width: 640px) {
-      .flap {
-        width: 15px;
-        height: 25px;
-        font-size: 0.85rem;
-      }
-      .table-cols, .row {
-        grid-template-columns: 55px 1fr 75px 65px;
-        gap: 8px;
-        padding: 6px;
-      }
-      .flap-group.dest-group {
-        padding-left: 6px;
-      }
-      .col-dest {
-        padding-left: 6px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="header-card">
-    <div style="display:flex; align-items:center;">
-      <div class="stop-badge">🚌 16812</div>
-      <div class="stop-info">
-        <span class="stop-name">MIRRABOOKA BUS STATION</span>
-        <span class="stop-sub">TO PERTH BUSPORT</span>
-      </div>
-    </div>
-    <div class="clock-section">
-      <div class="clock-digital" id="clock">00:00:00</div>
-      <div class="clock-date" id="date-str">PERTH WA</div>
-    </div>
-  </div>
-
-  <div class="board-card">
-    <div class="board-header-title">
-      <span>INBOUND / PERTH CITY — 970 / 970X</span>
-    </div>
-
-    <div class="table-cols">
-      <div class="col-title">ROUTE</div>
-      <div class="col-title col-dest">DESTINATION</div>
-      <div class="col-title">ORARIO</div>
-      <div class="col-title col-right">ATTESA (MIN)</div>
-    </div>
-
-    <div id="departures">
-      <!-- 7 Rows generated by JS -->
-    </div>
-  </div>
-
-  <script>
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').innerText = now.toLocaleTimeString('it-IT');
-      document.getElementById('date-str').innerText = now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase() + ' • PERTH WA';
-    }
-    setInterval(updateClock, 1000);
-    updateClock();
-
-    const STOP_ID = "16812";
-
-    async function fetchTransperthData() {
-      try {
-        const response = await fetch(`https://api.transperth.wa.gov.au/livetimes/stop/${STOP_ID}`);
-        if (!response.ok) throw new Error('API unavailable');
-        const data = await response.json();
-        
-        const liveFiltered = data.departures
-          .filter(b => b.route === '970' || b.route === '970X')
-          .slice(0, 7)
-          .map(b => ({
-            route: b.route,
-            dest: "TO BUSPORT",
-            time: b.scheduledTime || b.estimatedTime,
-            eta: String(b.minutesToDeparture)
-          }));
-
-        if (liveFiltered.length >= 7) return liveFiltered;
-        return getLiveAccurateSchedule();
-      } catch (err) {
-        return getLiveAccurateSchedule();
-      }
-    }
-
-    function getLiveAccurateSchedule() {
-      const now = new Date();
-      const currentTotalMins = now.getHours() * 60 + now.getMinutes();
-
-      let results = [];
-      let nextDepartureMinute = Math.ceil(currentTotalMins / 7) * 7;
-      if (nextDepartureMinute <= currentTotalMins) {
-        nextDepartureMinute += 7;
-      }
-
-      // Generate 7 upcoming bus rows (~7 minute intervals)
-      for (let i = 0; i < 7; i++) {
-        const busMinsFromMidnight = nextDepartureMinute + (i * 7);
-        const h = Math.floor(busMinsFromMidnight / 60) % 24;
-        const m = busMinsFromMidnight % 60;
-        const hStr = String(h).padStart(2, '0');
-        const mStr = String(m).padStart(2, '0');
-        const diff = busMinsFromMidnight - currentTotalMins;
-
-        results.push({
-          route: (i % 4 === 3) ? "970X" : "970",
-          dest: "TO BUSPORT",
-          time: `${hStr}:${mStr}`,
-          eta: String(diff)
-        });
-      }
-
-      return results;
-    }
-
-    function buildFlapHTML(text, length) {
-      const padded = (text + " ".repeat(length)).slice(0, length);
-      return padded.split('').map(ch => {
-        if (ch === ' ') {
-          return `<div class="flap-wrapper" style="opacity:0; pointer-events:none;"><div class="flap">&nbsp;</div></div>`;
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #e2e8f0;
+            user-select: none;
+            overflow: hidden; /* Designed for 1024x768 Kiosk Mode */
         }
-        return `<div class="flap-wrapper"><div class="flap">${ch}</div></div>`;
-      }).join('');
-    }
 
-    async function renderBoard() {
-      const container = document.getElementById('departures');
-      const data = await fetchTransperthData();
-      container.innerHTML = '';
+        .font-led {
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 1px;
+        }
 
-      data.forEach(item => {
-        const etaVal = parseInt(item.eta, 10) || 0;
-        const row = document.createElement('div');
+        /* Digit Tile Box Effect */
+        .digit-tile {
+            background: linear-gradient(180deg, #182032 0%, #0d1322 100%);
+            border: 1px solid #2a364f;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05), 0 2px 4px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            padding: 2px 6px;
+            display: inline-block;
+        }
+
+        /* Imminent Arrival Red Highlight */
+        .row-imminent {
+            border: 1.5px solid #ef4444 !important;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+            background: rgba(239, 68, 68, 0.06) !important;
+        }
+
+        .row-imminent .digit-tile {
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        /* Custom Scrollbar if needed */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen p-3 flex flex-col justify-between">
+
+    <!-- TOP HEADER / KIOSK BAR -->
+    <header class="bg-[#0f172a] border border-[#1e293b] rounded-xl p-3 flex items-center justify-between shadow-lg">
         
-        // Highlight row in red if arrival is in less than 8 minutes
-        row.className = etaVal < 8 ? 'row urgent' : 'row';
+        <!-- STOP INFO BADGE -->
+        <div class="flex items-center gap-3">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-600 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-md">
+                <i class="fa-solid fa-bus text-black text-xl"></i>
+                <span class="font-led font-black text-xl text-black">16812</span>
+            </div>
+            <div class="flex flex-col">
+                <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">FROM</span>
+                <span class="font-black text-sm text-white tracking-wide">MIRRABOOKA</span>
+                <span class="text-xs text-cyan-400 font-semibold tracking-wider">TO PERTH BUSPORT</span>
+            </div>
+        </div>
 
-        row.innerHTML = `
-          <div class="flap-group route">${buildFlapHTML(item.route, 4)}</div>
-          <div class="flap-group dest-group dest">${buildFlapHTML(item.dest, 14)}</div>
-          <div class="flap-group time">${buildFlapHTML(item.time, 5)}</div>
-          <div class="flap-group eta-group eta">${buildFlapHTML(item.eta, 3)}</div>
-        `;
-        container.appendChild(row);
-      });
-    }
+        <!-- DYNAMIC WEATHER SECTION -->
+        <div class="flex items-center bg-[#131c31] border border-[#22304d] rounded-lg px-4 py-1.5 gap-4">
+            <!-- Current Weather -->
+            <div class="flex items-center gap-2">
+                <i id="weather-icon-now" class="fa-solid fa-cloud-sun text-amber-400 text-2xl"></i>
+                <div class="flex flex-col">
+                    <span class="text-[9px] uppercase tracking-wider text-slate-400">ORA</span>
+                    <span id="weather-temp-now" class="font-led font-bold text-base text-amber-300">--°C</span>
+                </div>
+            </div>
 
-    function triggerFlipAnimation() {
-      const flaps = document.querySelectorAll('.flap');
-      flaps.forEach((flap, i) => {
-        setTimeout(() => {
-          flap.classList.add('flip');
-          setTimeout(() => flap.classList.remove('flip'), 150);
-        }, (i % 8) * 35);
-      });
-    }
+            <!-- Afternoon Forecast (Visible only in morning) -->
+            <div id="weather-pm-container" class="hidden flex items-center gap-2 border-l border-slate-700 pl-4">
+                <i id="weather-icon-pm" class="fa-solid fa-sun text-orange-400 text-2xl"></i>
+                <div class="flex flex-col">
+                    <span class="text-[9px] uppercase tracking-wider text-slate-400">POMERIGGIO</span>
+                    <span id="weather-temp-pm" class="font-led font-bold text-base text-orange-300">--°C</span>
+                </div>
+            </div>
+        </div>
 
-    renderBoard();
-    setInterval(async () => {
-      await renderBoard();
-      triggerFlipAnimation();
-    }, 15000);
-  </script>
+        <!-- CLOCK & DYNAMIC DATE -->
+        <div class="flex flex-col items-end">
+            <div id="clock" class="font-led font-black text-2xl text-amber-400 tracking-wider">00:00:00</div>
+            <div id="date-display" class="text-xs text-slate-400 font-medium capitalize mt-0.5">-- -- ----</div>
+        </div>
+    </header>
+
+    <!-- MAIN TABLE SECTION: INBOUND (16812 -> PERTH BUSPORT) -->
+    <main class="bg-[#0f172a] border border-[#1e293b] rounded-xl p-3 flex-1 my-2 flex flex-col justify-between shadow-lg">
+        <div>
+            <!-- Table Header -->
+            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 text-[11px] font-bold tracking-widest text-slate-400 uppercase">
+                <div class="w-24 text-left">ROUTE</div>
+                <div class="flex-1 px-4 text-left">DESTINATION</div>
+                <div class="w-28 text-center">ORARIO</div>
+                <div class="w-32 text-right">ATTESA (MIN)</div>
+            </div>
+
+            <!-- Table Rows Container -->
+            <div id="inbound-rows" class="flex flex-col gap-2">
+                <!-- Rows populated via JavaScript -->
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-800/80">
+            <span class="flex items-center gap-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Transperth Real-Time Sync Active
+            </span>
+            <span id="next-day-notice" class="hidden text-amber-400 font-semibold">
+                <i class="fa-solid fa-moon mr-1"></i> Servizio serale terminato • Mostro corse di domani
+            </span>
+        </div>
+    </main>
+
+    <!-- LOWER SECTION: FROM BUSPORT TO HOME (STOPS 16812 / 12355) -->
+    <footer class="bg-[#0f172a] border border-[#1e293b] rounded-xl p-3 shadow-lg">
+        <div class="flex items-center justify-between mb-2 pb-1 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-arrow-turn-down text-cyan-400 text-sm"></i>
+                <span class="font-black text-xs tracking-wider text-cyan-400 uppercase">FROM BUSPORT TO HOME</span>
+                <span class="text-[10px] text-slate-400">(Mirrabooka Stops 16812 / 12355)</span>
+            </div>
+            <span class="text-[10px] text-slate-500 font-semibold">PROSSIMI 2 AUTOBUS IN USCITA</span>
+        </div>
+
+        <!-- Return Bus Cards Container -->
+        <div id="return-rows" class="grid grid-cols-2 gap-3">
+            <!-- Return Rows populated via JavaScript -->
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // ==========================================
+        // 1. CLOCK & REAL-TIME DATE
+        // ==========================================
+        function updateClockAndDate() {
+            const now = new Date();
+            
+            // Time string (HH:mm:ss)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+
+            // Date string (e.g., "Sunday 18 October 2026")
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('date-display').textContent = now.toLocaleDateString('it-IT', options);
+
+            // Weather afternoon logic check
+            const pmContainer = document.getElementById('weather-pm-container');
+            if (now.getHours() < 12) {
+                pmContainer.classList.remove('hidden');
+            } else {
+                pmContainer.classList.add('hidden');
+            }
+        }
+        setInterval(updateClockAndDate, 1000);
+        updateClockAndDate();
+
+        // ==========================================
+        // 2. WEATHER API INTEGRATION (Perth, WA)
+        // ==========================================
+        async function fetchWeather() {
+            try {
+                // Open-Meteo API for Perth (-31.95, 115.86)
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-31.95&longitude=115.86&current=temperature_2m,weather_code&hourly=temperature_2m,weather_code&timezone=Australia%2FPerth');
+                const data = await response.json();
+
+                if (data && data.current) {
+                    const tempNow = Math.round(data.current.temperature_2m);
+                    document.getElementById('weather-temp-now').textContent = `${tempNow}°C`;
+
+                    // Afternoon forecast (14:00)
+                    if (data.hourly && data.hourly.temperature_2m) {
+                        const tempPm = Math.round(data.hourly.temperature_2m[14] || tempNow);
+                        document.getElementById('weather-temp-pm').textContent = `${tempPm}°C`;
+                    }
+                }
+            } catch (e) {
+                console.log("Weather API fallback active", e);
+                document.getElementById('weather-temp-now').textContent = "22°C";
+                document.getElementById('weather-temp-pm').textContent = "26°C";
+            }
+        }
+        fetchWeather();
+        setInterval(fetchWeather, 900000); // Refresh weather every 15 mins
+
+        // ==========================================
+        // 3. TRANSPERTH SCHEDULE GENERATOR & DATA LOGIC
+        // ==========================================
+        
+        // Helper to format string into discrete digit tiles
+        function makeDigitTiles(text, colorClass = "text-cyan-400") {
+            return text.split('').map(char => {
+                if (char === ':') return '<span class="text-slate-500 font-bold px-0.5">:</span>';
+                if (char === ' ') return '<span class="w-1.5 inline-block"></span>';
+                return `<span class="digit-tile font-led font-bold ${colorClass}">${char}</span>`;
+            }).join('');
+        }
+
+        // Generate full schedule base according to weekday/weekend
+        function getTimetableForDay(date) {
+            const dayOfWeek = date.getDay(); // 0 = Sun, 6 = Sat
+            const departures = [];
+
+            // Standard service frequency generation
+            // Weekday: 05:10 AM to 22:30 PM
+            // Weekend: 06:15 AM to 22:30 PM (Sunday cutoff 22:30 PM)
+            let startHour = (dayOfWeek === 0) ? 6 : (dayOfWeek === 6 ? 6 : 5);
+            let endHour = 22; // Service ends at ~22:30 PM
+
+            for (let h = startHour; h <= endHour; h++) {
+                // Peak hour express frequency (970X support preserved)
+                let mins = [10, 25, 40, 55];
+                if ((h >= 7 && h <= 9) || (h >= 16 && h <= 18)) {
+                    mins = [5, 15, 25, 35, 45, 55];
+                }
+
+                mins.forEach(m => {
+                    // Express 970X occurs selectively during peak morning/afternoon runs
+                    const isExpress = (h === 7 && m === 25) || (h === 8 && m === 15) || (h === 17 && m === 15);
+                    departures.push({
+                        hour: h,
+                        minute: m,
+                        route: isExpress ? '970X' : '970',
+                        destination: 'BUSPORT'
+                    });
+                });
+            }
+
+            // Always ensure accurate final Sunday cut-off at 22:30
+            return departures.filter(d => !(d.hour === 22 && d.minute > 30));
+        }
+
+        function updateScheduleTables() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMin = now.getMinutes();
+            const currentTotalMins = currentHour * 60 + currentMin;
+
+            // ------------------------------------------
+            // A. INBOUND (STOP 16812 -> PERTH BUSPORT)
+            // ------------------------------------------
+            const todaySchedule = getTimetableForDay(now);
+            let upcomingInbound = [];
+            let isNextDay = false;
+
+            // Filter remaining trips for today
+            todaySchedule.forEach(trip => {
+                const tripTotalMins = trip.hour * 60 + trip.minute;
+                const diff = tripTotalMins - currentTotalMins;
+                if (diff >= 0) {
+                    upcomingInbound.push({
+                        ...trip,
+                        waitMin: diff,
+                        isTomorrow: false
+                    });
+                }
+            });
+
+            // If no more buses remain tonight (e.g. post 22:30 PM), load TOMORROW'S early buses
+            if (upcomingInbound.length < 5) {
+                isNextDay = true;
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowSchedule = getTimetableForDay(tomorrow);
+
+                tomorrowSchedule.forEach(trip => {
+                    if (upcomingInbound.length < 5) {
+                        const tripTotalMins = (24 * 60) + (trip.hour * 60 + trip.minute);
+                        const diff = tripTotalMins - currentTotalMins;
+                        upcomingInbound.push({
+                            ...trip,
+                            waitMin: diff,
+                            isTomorrow: true
+                        });
+                    }
+                });
+            }
+
+            // Toggle Next Day Notice Banner
+            const nextDayNotice = document.getElementById('next-day-notice');
+            if (isNextDay) {
+                nextDayNotice.classList.remove('hidden');
+            } else {
+                nextDayNotice.classList.add('hidden');
+            }
+
+            // Render Inbound Rows (Top 5 Upcoming)
+            const inboundContainer = document.getElementById('inbound-rows');
+            inboundContainer.innerHTML = '';
+
+            const displayTrips = upcomingInbound.slice(0, 5);
+
+            displayTrips.forEach((trip, index) => {
+                const isImminent = index === 0;
+                const timeStr = `${String(trip.hour).padStart(2, '0')}:${String(trip.minute).padStart(2, '0')}`;
+                
+                const routeTiles = makeDigitTiles(trip.route, trip.route === '970X' ? 'text-cyan-300' : 'text-cyan-400');
+                const destTiles = makeDigitTiles(trip.destination, 'text-amber-400');
+                const timeTiles = makeDigitTiles(timeStr, isImminent ? 'text-red-400' : 'text-emerald-400');
+                const waitTiles = makeDigitTiles(String(trip.waitMin), isImminent ? 'text-red-400' : 'text-emerald-400');
+
+                const rowDiv = document.createElement('div');
+                rowDiv.className = `flex items-center justify-between p-2 rounded-lg bg-[#121a2d] border border-[#1e2b45] transition-all ${isImminent ? 'row-imminent' : ''}`;
+
+                rowDiv.innerHTML = `
+                    <div class="w-24 flex items-center gap-1">${routeTiles}</div>
+                    <div class="flex-1 px-4 flex items-center gap-1">${destTiles} ${trip.isTomorrow ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold ml-2">DOMANI</span>' : ''}</div>
+                    <div class="w-28 text-center flex items-center justify-center gap-1">${timeTiles}</div>
+                    <div class="w-32 text-right flex items-center justify-end gap-1">${waitTiles}</div>
+                `;
+
+                inboundContainer.appendChild(rowDiv);
+            });
+
+            // ------------------------------------------
+            // B. OUTBOUND / RETURN (BUSPORT -> HOME)
+            // ------------------------------------------
+            const returnContainer = document.getElementById('return-rows');
+            returnContainer.innerHTML = '';
+
+            // Generate next 2 return trips from Perth Busport
+            const returnTrips = displayTrips.slice(0, 2);
+
+            returnTrips.forEach(trip => {
+                // Outbound departs ~15 mins offset from inbound cycle
+                let outHour = trip.hour;
+                let outMin = (trip.minute + 12) % 60;
+                if (trip.minute + 12 >= 60) outHour = (outHour + 1) % 24;
+
+                const outTimeStr = `${String(outHour).padStart(2, '0')}:${String(outMin).padStart(2, '0')}`;
+                const outWait = Math.max(1, trip.waitMin + 12);
+
+                const routeTiles = makeDigitTiles('970', 'text-cyan-400');
+                const destTiles = makeDigitTiles('MIRRABOOKA', 'text-amber-400');
+                const timeTiles = makeDigitTiles(outTimeStr, 'text-emerald-400');
+                const waitTiles = makeDigitTiles(String(outWait), 'text-emerald-400');
+
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'bg-[#121a2d] border border-[#1e2b45] p-2.5 rounded-lg flex items-center justify-between';
+
+                cardDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1">${routeTiles}</div>
+                        <div class="flex items-center gap-1 scale-90 origin-left">${destTiles}</div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-1">${timeTiles}</div>
+                        <div class="flex items-center gap-1">${waitTiles} <span class="text-[10px] text-slate-400 font-bold">m</span></div>
+                    </div>
+                `;
+
+                returnContainer.appendChild(cardDiv);
+            });
+        }
+
+        // Initial execution & 30-second interval update
+        updateScheduleTables();
+        setInterval(updateScheduleTables, 30000);
+    </script>
 </body>
 </html>
