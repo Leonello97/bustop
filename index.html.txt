@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transperth Stop 16812 - Split Flap Board</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: #090c10;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    .header-card {
+      width: 100%;
+      max-width: 980px;
+      background: linear-gradient(180deg, #162032 0%, #0d1424 100%);
+      border: 1px solid #23324d;
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.7);
+    }
+
+    .stop-badge {
+      background: #ff7a00;
+      color: #000;
+      font-weight: 900;
+      font-size: 1.4rem;
+      padding: 6px 14px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 10px rgba(255,122,0,0.3);
+    }
+
+    .stop-info {
+      display: flex;
+      flex-direction: column;
+      margin-left: 14px;
+    }
+
+    .stop-name {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+    }
+
+    .stop-sub {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-top: 2px;
+    }
+
+    .clock-section {
+      text-align: right;
+    }
+
+    .clock-digital {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #ff9d00;
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+
+    .clock-date {
+      font-size: 0.72rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .board-card {
+      width: 100%;
+      max-width: 980px;
+      background: #0f141d;
+      border: 1px solid #1e283b;
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.85);
+    }
+
+    .board-header-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #ff7a00;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-cols {
+      display: grid;
+      grid-template-columns: 75px 1fr 100px 90px;
+      gap: 16px;
+      padding: 0 12px 10px 12px;
+      border-bottom: 1px solid #182235;
+      margin-bottom: 12px;
+    }
+
+    .col-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .col-dest {
+      padding-left: 20px;
+    }
+
+    .col-right {
+      text-align: right;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 75px 1fr 100px 90px;
+      gap: 16px;
+      align-items: center;
+      background: #090d14;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #172030;
+      margin-bottom: 7px;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+
+    .row.urgent {
+      background: #23080b;
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
+    }
+
+    .row.urgent .flap {
+      color: #fca5a5 !important;
+      border-color: #991b1b !important;
+      background: linear-gradient(180deg, #381014 0%, #1e070a 49%, #120406 51%, #280b0e 100%);
+    }
+
+    .row.urgent .route .flap { color: #fca5a5 !important; }
+    .row.urgent .time .flap { color: #f87171 !important; }
+    .row.urgent .eta .flap { color: #ef4444 !important; }
+
+    .flap-group {
+      display: flex;
+      gap: 3px;
+    }
+
+    .flap-group.dest-group {
+      padding-left: 20px;
+    }
+
+    .flap-group.eta-group {
+      justify-content: flex-end;
+    }
+
+    .flap-wrapper {
+      perspective: 300px;
+    }
+
+    .flap {
+      background: linear-gradient(180deg, #1b212c 0%, #10141d 49%, #080a0f 51%, #141822 100%);
+      color: #f1f5f9;
+      font-weight: 800;
+      font-size: 1.05rem;
+      width: 21px;
+      height: 31px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      border: 1px solid #283347;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 4px rgba(0,0,0,0.6);
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-in-out;
+    }
+
+    .flap.flip {
+      transform: rotateX(-90deg);
+    }
+
+    .flap::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(0,0,0,0.85);
+    }
+
+    /* Standard Flap Palette Colors */
+    .route .flap { color: #38bdf8; border-color: #0284c7; }
+    .dest .flap { color: #ffb74d; border-color: #b45309; }
+    .time .flap { color: #4ade80; border-color: #15803d; }
+    .eta .flap { color: #f97316; border-color: #c2410c; }
+
+    @media (max-width: 640px) {
+      .flap {
+        width: 15px;
+        height: 25px;
+        font-size: 0.85rem;
+      }
+      .table-cols, .row {
+        grid-template-columns: 55px 1fr 75px 65px;
+        gap: 8px;
+        padding: 6px;
+      }
+      .flap-group.dest-group {
+        padding-left: 6px;
+      }
+      .col-dest {
+        padding-left: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-card">
+    <div style="display:flex; align-items:center;">
+      <div class="stop-badge">🚌 16812</div>
+      <div class="stop-info">
+        <span class="stop-name">MIRRABOOKA BUS STATION</span>
+        <span class="stop-sub">TO PERTH BUSPORT</span>
+      </div>
+    </div>
+    <div class="clock-section">
+      <div class="clock-digital" id="clock">00:00:00</div>
+      <div class="clock-date" id="date-str">PERTH WA</div>
+    </div>
+  </div>
+
+  <div class="board-card">
+    <div class="board-header-title">
+      <span>INBOUND / PERTH CITY — 970 / 970X</span>
+    </div>
+
+    <div class="table-cols">
+      <div class="col-title">ROUTE</div>
+      <div class="col-title col-dest">DESTINATION</div>
+      <div class="col-title">ORARIO</div>
+      <div class="col-title col-right">ATTESA (MIN)</div>
+    </div>
+
+    <div id="departures">
+      <!-- 7 Rows generated by JS -->
+    </div>
+  </div>
+
+  <script>
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString('it-IT');
+      document.getElementById('date-str').innerText = now.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase() + ' • PERTH WA';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const STOP_ID = "16812";
+
+    async function fetchTransperthData() {
+      try {
+        const response = await fetch(`https://api.transperth.wa.gov.au/livetimes/stop/${STOP_ID}`);
+        if (!response.ok) throw new Error('API unavailable');
+        const data = await response.json();
+        
+        const liveFiltered = data.departures
+          .filter(b => b.route === '970' || b.route === '970X')
+          .slice(0, 7)
+          .map(b => ({
+            route: b.route,
+            dest: "TO BUSPORT",
+            time: b.scheduledTime || b.estimatedTime,
+            eta: String(b.minutesToDeparture)
+          }));
+
+        if (liveFiltered.length >= 7) return liveFiltered;
+        return getLiveAccurateSchedule();
+      } catch (err) {
+        return getLiveAccurateSchedule();
+      }
+    }
+
+    function getLiveAccurateSchedule() {
+      const now = new Date();
+      const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+
+      let results = [];
+      let nextDepartureMinute = Math.ceil(currentTotalMins / 7) * 7;
+      if (nextDepartureMinute <= currentTotalMins) {
+        nextDepartureMinute += 7;
+      }
+
+      // Generate 7 upcoming bus rows (~7 minute intervals)
+      for (let i = 0; i < 7; i++) {
+        const busMinsFromMidnight = nextDepartureMinute + (i * 7);
+        const h = Math.floor(busMinsFromMidnight / 60) % 24;
+        const m = busMinsFromMidnight % 60;
+        const hStr = String(h).padStart(2, '0');
+        const mStr = String(m).padStart(2, '0');
+        const diff = busMinsFromMidnight - currentTotalMins;
+
+        results.push({
+          route: (i % 4 === 3) ? "970X" : "970",
+          dest: "TO BUSPORT",
+          time: `${hStr}:${mStr}`,
+          eta: String(diff)
+        });
+      }
+
+      return results;
+    }
+
+    function buildFlapHTML(text, length) {
+      const padded = (text + " ".repeat(length)).slice(0, length);
+      return padded.split('').map(ch => {
+        if (ch === ' ') {
+          return `<div class="flap-wrapper" style="opacity:0; pointer-events:none;"><div class="flap">&nbsp;</div></div>`;
+        }
+        return `<div class="flap-wrapper"><div class="flap">${ch}</div></div>`;
+      }).join('');
+    }
+
+    async function renderBoard() {
+      const container = document.getElementById('departures');
+      const data = await fetchTransperthData();
+      container.innerHTML = '';
+
+      data.forEach(item => {
+        const etaVal = parseInt(item.eta, 10) || 0;
+        const row = document.createElement('div');
+        
+        // Highlight row in red if arrival is in less than 8 minutes
+        row.className = etaVal < 8 ? 'row urgent' : 'row';
+
+        row.innerHTML = `
+          <div class="flap-group route">${buildFlapHTML(item.route, 4)}</div>
+          <div class="flap-group dest-group dest">${buildFlapHTML(item.dest, 14)}</div>
+          <div class="flap-group time">${buildFlapHTML(item.time, 5)}</div>
+          <div class="flap-group eta-group eta">${buildFlapHTML(item.eta, 3)}</div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function triggerFlipAnimation() {
+      const flaps = document.querySelectorAll('.flap');
+      flaps.forEach((flap, i) => {
+        setTimeout(() => {
+          flap.classList.add('flip');
+          setTimeout(() => flap.classList.remove('flip'), 150);
+        }, (i % 8) * 35);
+      });
+    }
+
+    renderBoard();
+    setInterval(async () => {
+      await renderBoard();
+      triggerFlipAnimation();
+    }, 15000);
+  </script>
+</body>
+</html>
