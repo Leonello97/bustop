@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transperth Kiosk Dashboard</title>
-    <!-- Tailwind CSS for structural layout -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap');
 
         :root {
-            --bg-color: #0b0f17;
-            --panel-bg: rgba(18, 24, 38, 0.85);
+            --bg-color: #080c14;
+            --panel-bg: rgba(15, 21, 32, 0.9);
             --border-color: #1e293b;
-            --amber-glow: #f5a623;
             --amber-text: #ffb74d;
             --blue-text: #58a6ff;
-            --red-glow: rgba(239, 68, 68, 0.25);
+            --red-glow: rgba(239, 68, 68, 0.22);
             --red-border: #ef4444;
         }
 
@@ -32,23 +31,23 @@
             flex-direction: column;
         }
 
-        /* Retro Flap Tile Component */
+        /* Split-Flap Tile Styling */
         .flap-tile {
-            background: linear-gradient(180deg, #182030 0%, #0f1522 49%, #090d15 50%, #141c2b 100%);
-            border: 1px solid #2a364f;
+            background: linear-gradient(180deg, #1e2638 0%, #111827 49%, #090e1a 50%, #161e2e 100%);
+            border: 1px solid #2a3850;
             border-radius: 4px;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 2px 4px rgba(0, 0, 0, 0.6);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 2px 4px rgba(0, 0, 0, 0.7);
             position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
             margin: 0 1px;
             overflow: hidden;
+            perspective: 300px;
         }
 
-        /* Horizontal Split line in center of split-flap tile */
+        /* Split Seam Line */
         .flap-tile::after {
             content: '';
             position: absolute;
@@ -56,40 +55,45 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
-            z-index: 2;
+            z-index: 5;
+        }
+
+        /* 3D Flip Rotation Animation Class */
+        .flap-animating {
+            animation: flipTile 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        @keyframes flipTile {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(-90deg); filter: brightness(1.4); }
+            100% { transform: rotateX(0deg); }
         }
 
         .tile-amber {
             color: var(--amber-text);
-            text-shadow: 0 0 8px rgba(245, 166, 35, 0.4);
+            text-shadow: 0 0 8px rgba(245, 166, 35, 0.45);
         }
 
         .tile-blue {
             color: var(--blue-text);
-            text-shadow: 0 0 8px rgba(88, 166, 255, 0.4);
+            text-shadow: 0 0 8px rgba(88, 166, 255, 0.45);
         }
 
-        .tile-white {
-            color: #e2e8f0;
-            text-shadow: 0 0 6px rgba(226, 232, 240, 0.3);
-        }
-
-        /* Red Warning Row Effect - ONLY for top section urgent buses */
+        /* Red Warning Row Effect - ONLY for top section urgent buses <= 10m */
         .urgent-row-red {
             background-color: var(--red-glow) !important;
             border-color: var(--red-border) !important;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.35);
             animation: pulse-red 2s infinite ease-in-out;
         }
 
         @keyframes pulse-red {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.75; }
+            50% { opacity: 0.8; }
         }
 
-        /* Custom Scrollbar for responsiveness if scaled down */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -101,190 +105,214 @@
 </head>
 <body class="p-4 flex flex-col justify-between h-screen max-w-[1280px] mx-auto">
 
-    <!-- HEADER PANEL: Weather Morning | Clock & Full Date | Weather Evening -->
-    <header class="bg-[#121826] border border-[#1e293b] rounded-lg p-3 px-6 flex items-center justify-between shadow-lg">
+    <!-- HEADER PANEL: Current Weather (Left) | Clock & Date (Center) | Next Weather (Right) -->
+    <header class="bg-[#101622] border border-[#1e293b] rounded-lg p-3 px-5 flex items-center justify-between shadow-lg">
         
-        <!-- LEFT: Morning Weather (Odierna/Successiva) -->
-        <div class="flex items-center space-x-3 w-1/4">
-            <span class="text-3xl" id="morning-icon">⛅</span>
+        <!-- LEFT: CURRENT WEATHER PERIOD (AM / PM) -->
+        <div class="flex items-center space-x-3 w-1/3">
+            <span class="text-3xl" id="left-weather-icon">🌙</span>
             <div class="flex flex-col">
-                <div class="text-xs text-slate-400 font-sans tracking-wider font-semibold">PERTH MORNING</div>
-                <div class="text-lg font-bold text-sky-400" id="morning-weather">16°C • PARTLY CLOUDY</div>
+                <div class="text-[10px] text-slate-400 font-sans tracking-wider font-bold" id="left-weather-label">PERTH EVENING</div>
+                <div class="text-base font-bold text-sky-400" id="left-weather-desc">17°C • CLEAR NIGHT</div>
             </div>
         </div>
 
-        <!-- CENTER: Time (HH:MM:SS) and Full Day Name + Date -->
-        <div class="flex flex-col items-center justify-center text-center w-2/4">
-            <div id="live-clock" class="text-4xl md:text-5xl font-bold tracking-widest text-[#f5a623]" style="text-shadow: 0 0 12px rgba(245, 166, 35, 0.5);">
-                23:08:20
+        <!-- CENTER: LIVE TIME & FULL DAY NAME -->
+        <div class="flex flex-col items-center justify-center text-center w-1/3">
+            <div id="live-clock" class="text-3xl md:text-4xl font-bold tracking-widest text-[#f5a623]" style="text-shadow: 0 0 12px rgba(245, 166, 35, 0.5);">
+                23:17:26
             </div>
-            <div id="live-date" class="text-xs md:text-sm text-slate-300 font-sans tracking-widest mt-1 uppercase font-bold">
+            <div id="live-date" class="text-xs text-slate-300 font-sans tracking-widest mt-0.5 uppercase font-bold">
                 SUNDAY, 25 OCT 2026
             </div>
         </div>
 
-        <!-- RIGHT: Evening Weather (Odierna/Successiva) -->
-        <div class="flex items-center justify-end space-x-3 w-1/4 text-right">
+        <!-- RIGHT: UPCOMING WEATHER PERIOD (PM / TOMORROW AM) -->
+        <div class="flex items-center justify-end space-x-3 w-1/3 text-right">
             <div class="flex flex-col">
-                <div class="text-xs text-slate-400 font-sans tracking-wider font-semibold">PERTH EVENING</div>
-                <div class="text-lg font-bold text-amber-400" id="evening-weather">20°C • CLEAR NIGHT</div>
+                <div class="text-[10px] text-amber-400/90 font-sans tracking-wider font-bold" id="right-weather-label">TOMORROW MORNING</div>
+                <div class="text-base font-bold text-amber-400" id="right-weather-desc">15°C • MILD AM</div>
             </div>
-            <span class="text-3xl" id="evening-icon">🌙</span>
+            <span class="text-3xl" id="right-weather-icon">⛅</span>
         </div>
     </header>
 
-    <!-- SECTION 1: INBOUND / STOP 16812 (WILUNA ST -> TO PERTH BUSPORT) -->
-    <section class="bg-[#121826] border border-[#1e293b] rounded-lg p-4 my-2 flex-1 flex flex-col justify-start shadow-xl relative">
-        <!-- Section Title & Badge -->
-        <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
-            <div class="text-sm md:text-base font-bold text-slate-200 tracking-wider flex items-center gap-2">
+    <!-- INBOUND SECTION (ONLY 970 & 970X -> PERTH BUSPORT) -->
+    <section class="bg-[#101622] border border-[#1e293b] rounded-lg p-3.5 my-2 flex-1 flex flex-col justify-start shadow-xl relative">
+        <div class="flex justify-between items-center mb-2.5 border-b border-slate-800/80 pb-2">
+            <div class="text-sm font-bold text-slate-200 tracking-wider flex items-center gap-2">
                 <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 INBOUND / STOP 16812 (WILUNA ST)
             </div>
-            <div class="text-xs md:text-sm text-sky-400 font-bold tracking-wider uppercase">
+            <div class="text-xs text-sky-400 font-bold tracking-wider uppercase">
                 TO PERTH BUSPORT
             </div>
         </div>
 
-        <!-- Table Columns Header -->
-        <div class="grid grid-cols-12 text-xs text-slate-500 font-semibold px-3 mb-2 uppercase tracking-wider">
+        <!-- Inbound Table Header with Arrival Column -->
+        <div class="grid grid-cols-12 text-[11px] text-slate-500 font-semibold px-2 mb-2 uppercase tracking-wider">
             <div class="col-span-2">BUS</div>
-            <div class="col-span-6">DESTINATION</div>
-            <div class="col-span-2 text-center">ORARIO</div>
+            <div class="col-span-4">DESTINATION</div>
+            <div class="col-span-2 text-center">PARTENZA</div>
+            <div class="col-span-2 text-center">ARRIVO BUSPORT</div>
             <div class="col-span-2 text-right">ATTESA</div>
         </div>
 
-        <!-- Bus Items Container -->
-        <div id="inbound-list" class="space-y-2.5 flex-1 overflow-y-auto pr-1">
-            <!-- Dynamic Content Injected Here -->
+        <div id="inbound-list" class="space-y-2 flex-1 overflow-y-auto">
+            <!-- Dynamic Inbound Rows -->
         </div>
     </section>
 
-    <!-- SECTION 2: OUTBOUND / FROM PERTH BUSPORT (TO HOME) -->
-    <section class="bg-[#121826] border border-[#1e293b] rounded-lg p-4 my-2 flex-1 flex flex-col justify-start shadow-xl relative">
-        <!-- Section Title & Badge -->
-        <div class="flex justify-between items-center mb-3 border-b border-slate-800 pb-2">
-            <div class="text-sm md:text-base font-bold text-slate-200 tracking-wider flex items-center gap-2">
+    <!-- OUTBOUND SECTION (FROM PERTH BUSPORT -> HOME / DOG SWAMP) -->
+    <section class="bg-[#101622] border border-[#1e293b] rounded-lg p-3.5 my-2 flex-1 flex flex-col justify-start shadow-xl relative">
+        <div class="flex justify-between items-center mb-2.5 border-b border-slate-800/80 pb-2">
+            <div class="text-sm font-bold text-slate-200 tracking-wider flex items-center gap-2">
                 <span class="inline-block w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse"></span>
                 OUTBOUND / FROM PERTH BUSPORT
             </div>
-            <div class="text-xs md:text-sm text-amber-400 font-bold tracking-wider uppercase">
+            <div class="text-xs text-amber-400 font-bold tracking-wider uppercase">
                 TO HOME (16813 / 12355)
             </div>
         </div>
 
-        <!-- Table Columns Header -->
-        <div class="grid grid-cols-12 text-xs text-slate-500 font-semibold px-3 mb-2 uppercase tracking-wider">
+        <div class="grid grid-cols-12 text-[11px] text-slate-500 font-semibold px-2 mb-2 uppercase tracking-wider">
             <div class="col-span-2">BUS</div>
             <div class="col-span-6">DESTINATION</div>
-            <div class="col-span-2 text-center">ORARIO</div>
+            <div class="col-span-2 text-center">PARTENZA</div>
             <div class="col-span-2 text-right">ATTESA</div>
         </div>
 
-        <!-- Bus Items Container -->
-        <div id="outbound-list" class="space-y-2.5 flex-1 overflow-y-auto pr-1">
-            <!-- Dynamic Content Injected Here -->
+        <div id="outbound-list" class="space-y-2 flex-1 overflow-y-auto">
+            <!-- Dynamic Outbound Rows -->
         </div>
     </section>
 
-    <!-- FOOTER / STATUS -->
-    <footer class="text-center text-[11px] text-slate-600 my-1 flex justify-between px-2">
-        <div>TRANSPERTH REALTIME BUS MONITOR • KIOSK MODE</div>
-        <div>UPDATED: JUST NOW</div>
+    <!-- FOOTER -->
+    <footer class="text-center text-[10px] text-slate-600 my-0.5 flex justify-between px-2">
+        <div>TRANSPERTH REALTIME MONITOR • FLAP ROTATION: EVERY 30s</div>
+        <div>STATION ID: 16812 / 16813</div>
     </footer>
 
     <script>
-        // Transperth Timetable Data Schedules (24h format)
-        // Inbound Stop 16812 -> Perth Busport
+        // STRICT INBOUND TIMETABLE: Line 970 & 970X ONLY (Stop 16812 -> Busport)
         const INBOUND_SCHEDULE = [
-            { route: "389", times: ["05:42", "06:12", "06:32", "06:47", "07:02", "07:17", "07:32", "07:47", "08:02", "08:22", "08:52", "09:22", "10:22", "11:22", "12:22", "13:22", "14:22", "15:22", "16:22", "17:22", "18:22", "19:22", "20:22", "21:22", "22:22"] },
-            { route: "970", times: ["05:15", "05:45", "06:05", "06:20", "06:35", "06:50", "07:05", "07:20", "07:35", "07:50", "08:05", "08:35", "09:05", "09:35", "10:05", "10:35", "11:05", "11:35", "12:05", "12:35", "13:05", "13:35", "14:05", "14:35", "15:05", "15:35", "16:05", "16:35", "17:05", "17:35", "18:05", "18:35", "19:05", "19:35", "20:05", "20:35", "21:05", "21:35", "22:05", "22:35", "23:05", "23:35"] },
-            { route: "386", times: ["06:01", "06:31", "07:01", "07:26", "07:56", "08:26", "09:01", "09:31", "10:01", "10:31", "11:01", "11:31", "12:01", "12:31", "13:01", "13:31", "14:01", "14:31", "15:01", "15:31", "16:01", "16:31", "17:01", "17:31", "18:01", "18:31", "19:01", "19:31", "20:01", "20:31", "21:01", "21:31", "22:01", "22:31", "23:01"] }
+            { 
+                route: "970", 
+                times: ["05:15", "05:45", "06:05", "06:20", "06:35", "06:50", "07:05", "07:20", "07:35", "07:50", "08:05", "08:35", "09:05", "09:35", "10:05", "10:35", "11:05", "11:35", "12:05", "12:35", "13:05", "13:35", "14:05", "14:35", "15:05", "15:35", "16:05", "16:35", "17:05", "17:35", "18:05", "18:35", "19:05", "19:35", "20:05", "20:35", "21:05", "21:35", "22:05", "22:35", "23:05", "23:35"] 
+            },
+            { 
+                route: "970X", 
+                times: ["07:12", "07:27", "07:42", "07:57", "08:12", "08:27"] 
+            }
         ];
 
-        // Outbound Perth Busport -> Home
+        // OUTBOUND TIMETABLE: Lines 384, 386, 388, 389, 970, 970X
         const OUTBOUND_SCHEDULE = [
-            { route: "389", times: ["06:15", "07:15", "08:15", "09:15", "10:15", "11:15", "12:15", "13:15", "14:15", "15:15", "16:15", "17:15", "18:15", "19:15", "20:15", "21:15", "22:15", "23:15"] },
+            { route: "384", times: ["07:15", "08:45", "10:30", "12:30", "14:30", "16:30", "18:30"] },
+            { route: "386", times: ["06:30", "08:00", "09:30", "11:30", "13:30", "15:30", "17:30", "19:30", "20:00", "22:00", "23:45"] },
+            { route: "388", times: ["07:00", "08:30", "10:00", "12:00", "14:00", "16:00", "18:00", "21:00"] },
+            { route: "389", times: ["06:15", "07:45", "09:15", "11:00", "13:00", "15:00", "17:00", "19:00", "23:15"] },
             { route: "970", times: ["06:00", "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"] },
-            { route: "386", times: ["06:45", "07:45", "08:45", "09:45", "10:45", "11:45", "12:45", "13:45", "14:45", "15:45", "16:45", "17:45", "18:45", "19:45", "20:45", "21:45", "22:45", "23:45"] },
             { route: "970X", times: ["16:10", "16:40", "17:10", "17:40", "18:10"] }
         ];
 
-        // Helper to format text into individual Split Flap Tiles
-        function createFlapText(text, width = 3, colorClass = "tile-amber", hClass = "h-9 w-6 text-lg") {
-            const padded = text.toString().padEnd(width, ' ');
+        let forceFlipAnimation = false;
+
+        // Render Flap Tile with EXACT text length + 1 trailing empty tile (No excess empty tiles)
+        function renderTrimmedFlap(text, colorClass = "tile-amber", heightClass = "h-8 w-5 text-base") {
+            const str = text.toString();
             let html = '<div class="flex items-center">';
-            for (let char of padded) {
+            
+            // Render actual characters
+            for (let char of str) {
                 const charDisplay = char === ' ' ? '&nbsp;' : char;
-                html += `<div class="flap-tile ${hClass} ${colorClass}">${charDisplay}</div>`;
+                const animClass = forceFlipAnimation ? 'flap-animating' : '';
+                html += `<div class="flap-tile ${heightClass} ${colorClass} ${animClass}">${charDisplay}</div>`;
             }
+            
+            // EXACTLY ONE trailing empty tile
+            const animClass = forceFlipAnimation ? 'flap-animating' : '';
+            html += `<div class="flap-tile ${heightClass} ${colorClass} ${animClass}">&nbsp;</div>`;
+            
             html += '</div>';
             return html;
         }
 
-        // Live Clock and Header Date update
+        // Add minutes to time string (e.g. 23:35 + 11 mins = 23:46)
+        function calculateArrival(timeStr, durationMins = 11) {
+            const [h, m] = timeStr.split(':').map(Number);
+            const date = new Date();
+            date.setHours(h, m + durationMins, 0, 0);
+            const arrH = String(date.getHours()).padStart(2, '0');
+            const arrM = String(date.getMinutes()).padStart(2, '0');
+            return `${arrH}:${arrM}`;
+        }
+
+        // Live Clock and Weather Logic (Morning/Evening Left-Right Cycle)
         function updateHeader() {
             const now = new Date();
             
-            // Format HH:MM:SS
             const hours = String(now.getHours()).padStart(2, '0');
             const mins = String(now.getMinutes()).padStart(2, '0');
             const secs = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('live-clock').textContent = `${hours}:${mins}:${secs}`;
 
-            // Full Day Name in English (e.g. SUNDAY, 25 OCT 2026)
             const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
             const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
             
-            const dayName = days[now.getDay()];
-            const dayNum = String(now.getDate()).padStart(2, '0');
-            const monthName = months[now.getMonth()];
-            const yearNum = now.getFullYear();
+            document.getElementById('live-date').textContent = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2, '0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-            document.getElementById('live-date').textContent = `${dayName}, ${dayNum} ${monthName} ${yearNum}`;
-
-            // Contextual Weather Indicators based on hour (Morning / Evening)
+            // WEATHER LOGIC:
+            // Left = Current Period (AM if 00:00-11:59, PM if 12:00-23:59)
+            // Right = Next Period (PM if daytime, TOMORROW AM if nighttime)
             const hour = now.getHours();
-            if (hour >= 6 && hour < 18) {
-                document.getElementById('morning-weather').textContent = "18°C • CLEAR SUNNY";
-                document.getElementById('morning-icon').textContent = "☀️";
-                document.getElementById('evening-weather').textContent = "15°C • COOL NIGHT";
-                document.getElementById('evening-icon').textContent = "🌙";
+            if (hour >= 0 && hour < 12) {
+                // Morning current
+                document.getElementById('left-weather-label').textContent = "PERTH MORNING";
+                document.getElementById('left-weather-desc').textContent = "16°C • SUNNY AM";
+                document.getElementById('left-weather-icon').textContent = "☀️";
+
+                // Evening upcoming today
+                document.getElementById('right-weather-label').textContent = "PERTH EVENING";
+                document.getElementById('right-weather-desc').textContent = "20°C • CLEAR PM";
+                document.getElementById('right-weather-icon').textContent = "🌙";
             } else {
-                document.getElementById('morning-weather').textContent = "14°C • MILD AM";
-                document.getElementById('morning-icon').textContent = "⛅";
-                document.getElementById('evening-weather').textContent = "17°C • CLEAR EVENING";
-                document.getElementById('evening-icon').textContent = "🌙";
+                // Evening current
+                document.getElementById('left-weather-label').textContent = "PERTH EVENING";
+                document.getElementById('left-weather-desc').textContent = "17°C • CLEAR NIGHT";
+                document.getElementById('left-weather-icon').textContent = "🌙";
+
+                // Tomorrow Morning upcoming
+                document.getElementById('right-weather-label').textContent = "TOMORROW MORNING";
+                document.getElementById('right-weather-desc').textContent = "15°C • MILD AM";
+                document.getElementById('right-weather-icon').textContent = "⛅";
             }
         }
 
-        // Helper to parse time string HH:MM relative to today or tomorrow
         function getNextBusDate(timeStr, isTomorrow = false) {
             const [h, m] = timeStr.split(':').map(Number);
             const d = new Date();
-            if (isTomorrow) {
-                d.setDate(d.getDate() + 1);
-            }
+            if (isTomorrow) d.setDate(d.getDate() + 1);
             d.setHours(h, m, 0, 0);
             return d;
         }
 
-        // Collect upcoming buses with automatic rollover for tomorrow if none left today
+        // Fetch upcoming buses (projects tomorrow if remaining count < 3)
         function getUpcomingBuses(scheduleList, destinationRule) {
             const now = new Date();
             let upcoming = [];
 
-            // 1. First check remaining buses for TODAY
             scheduleList.forEach(item => {
                 item.times.forEach(tStr => {
                     const busTime = getNextBusDate(tStr, false);
                     const diffMs = busTime - now;
-                    if (diffMs > -60000) { // include buses up to 1 min ago
+                    if (diffMs > -60000) {
                         const diffMins = Math.max(0, Math.floor(diffMs / 60000));
                         upcoming.push({
                             route: item.route,
                             destination: destinationRule(item.route),
                             timeStr: tStr,
+                            arrivalTimeStr: calculateArrival(tStr, 11),
                             diffMins: diffMins,
                             busDate: busTime,
                             isTomorrow: false
@@ -293,7 +321,6 @@
                 });
             });
 
-            // 2. If fewer than 3 buses remain today, project TOMORROW's early buses
             if (upcoming.length < 3) {
                 scheduleList.forEach(item => {
                     item.times.forEach(tStr => {
@@ -304,6 +331,7 @@
                             route: item.route,
                             destination: destinationRule(item.route),
                             timeStr: tStr,
+                            arrivalTimeStr: calculateArrival(tStr, 11),
                             diffMins: diffMins,
                             busDate: busTime,
                             isTomorrow: true
@@ -312,31 +340,27 @@
                 });
             }
 
-            // Sort by earliest departure date/time
             upcoming.sort((a, b) => a.busDate - b.busDate);
-            return upcoming.slice(0, 3); // top 3 entries
+            return upcoming.slice(0, 3);
         }
 
-        // Render Inbound & Outbound Dashboard Rows
         function renderDashboard() {
-            // Rule 1: Inbound Destination -> PERTH BUSPORT
+            // INBOUND: 970 & 970X ONLY
             const inboundBuses = getUpcomingBuses(INBOUND_SCHEDULE, () => "PERTH BUSPORT");
-            
-            // Rule 2: Outbound Destination -> HOME for 970/970X, DOG SWAMP for all others
+
+            // OUTBOUND: HOME for 970/970X, DOG SWAMP for all others
             const outboundBuses = getUpcomingBuses(OUTBOUND_SCHEDULE, (route) => {
                 return (route === "970" || route === "970X") ? "HOME" : "DOG SWAMP";
             });
 
-            // RENDER INBOUND (Top Panel)
+            // 1. RENDER INBOUND (With Arrival Time + Red warning ONLY on top row if <= 10m)
             const inboundContainer = document.getElementById('inbound-list');
             inboundContainer.innerHTML = '';
 
             inboundBuses.forEach((bus, index) => {
-                // RED HIGHLIGHT: ONLY for the 1st row in the TOP SECTION if arrival is under 10 minutes
                 const isUrgent = (index === 0 && bus.diffMins <= 10 && !bus.isTomorrow);
-                const urgentClass = isUrgent ? 'urgent-row-red' : 'bg-[#0f1420] border-slate-800/80';
+                const urgentClass = isUrgent ? 'urgent-row-red' : 'bg-[#0e131f] border-slate-800/80';
 
-                // Format wait time string
                 let waitText = `${bus.diffMins} m`;
                 if (bus.diffMins >= 120) {
                     const hrs = Math.floor(bus.diffMins / 60);
@@ -345,29 +369,28 @@
                 }
 
                 const rowHtml = `
-                    <div class="grid grid-cols-12 items-center p-2.5 rounded-lg border transition-all duration-300 ${urgentClass}">
-                        <!-- BUS NUMBER -->
+                    <div class="grid grid-cols-12 items-center p-2 rounded-lg border transition-all duration-300 ${urgentClass}">
                         <div class="col-span-2">
-                            ${createFlapText(bus.route, 4, 'tile-blue', 'h-9 w-6 text-lg')}
+                            ${renderTrimmedFlap(bus.route, 'tile-blue', 'h-8 w-5 text-base')}
                         </div>
-                        <!-- DESTINATION -->
-                        <div class="col-span-6 flex items-center">
-                            ${createFlapText(bus.destination, 18, 'tile-amber', 'h-9 w-6 text-base')}
+                        <div class="col-span-4 flex items-center">
+                            ${renderTrimmedFlap(bus.destination, 'tile-amber', 'h-8 w-5 text-sm')}
                         </div>
-                        <!-- DEPARTURE TIME -->
                         <div class="col-span-2 flex justify-center">
-                            ${createFlapText(bus.timeStr, 5, 'tile-amber', 'h-9 w-6 text-lg')}
+                            ${renderTrimmedFlap(bus.timeStr, 'tile-amber', 'h-8 w-5 text-base')}
                         </div>
-                        <!-- WAIT TIME -->
+                        <div class="col-span-2 flex justify-center">
+                            ${renderTrimmedFlap(bus.arrivalTimeStr, 'tile-amber', 'h-8 w-5 text-base')}
+                        </div>
                         <div class="col-span-2 flex justify-end">
-                            ${createFlapText(waitText, 4, 'tile-amber', 'h-9 w-6 text-lg')}
+                            ${renderTrimmedFlap(waitText, 'tile-amber', 'h-8 w-5 text-base')}
                         </div>
                     </div>
                 `;
                 inboundContainer.innerHTML += rowHtml;
             });
 
-            // RENDER OUTBOUND (Bottom Panel - NO RED HIGHLIGHT EVER)
+            // 2. RENDER OUTBOUND (NO Red Warning)
             const outboundContainer = document.getElementById('outbound-list');
             outboundContainer.innerHTML = '';
 
@@ -380,39 +403,42 @@
                 }
 
                 const rowHtml = `
-                    <div class="grid grid-cols-12 items-center p-2.5 rounded-lg border border-slate-800/80 bg-[#0f1420] transition-all duration-300">
-                        <!-- BUS NUMBER -->
+                    <div class="grid grid-cols-12 items-center p-2 rounded-lg border border-slate-800/80 bg-[#0e131f] transition-all duration-300">
                         <div class="col-span-2">
-                            ${createFlapText(bus.route, 4, 'tile-blue', 'h-9 w-6 text-lg')}
+                            ${renderTrimmedFlap(bus.route, 'tile-blue', 'h-8 w-5 text-base')}
                         </div>
-                        <!-- DESTINATION (HOME or DOG SWAMP) -->
                         <div class="col-span-6 flex items-center">
-                            ${createFlapText(bus.destination, 18, 'tile-amber', 'h-9 w-6 text-base')}
+                            ${renderTrimmedFlap(bus.destination, 'tile-amber', 'h-8 w-5 text-sm')}
                         </div>
-                        <!-- DEPARTURE TIME -->
                         <div class="col-span-2 flex justify-center">
-                            ${createFlapText(bus.timeStr, 5, 'tile-amber', 'h-9 w-6 text-lg')}
+                            ${renderTrimmedFlap(bus.timeStr, 'tile-amber', 'h-8 w-5 text-base')}
                         </div>
-                        <!-- WAIT TIME -->
                         <div class="col-span-2 flex justify-end">
-                            ${createFlapText(waitText, 4, 'tile-amber', 'h-9 w-6 text-lg')}
+                            ${renderTrimmedFlap(waitText, 'tile-amber', 'h-8 w-5 text-base')}
                         </div>
                     </div>
                 `;
                 outboundContainer.innerHTML += rowHtml;
             });
+
+            // Reset animation flag after render
+            forceFlipAnimation = false;
         }
 
-        // Loop execution
-        function tick() {
+        // 30-Second Flap Flip Timer
+        setInterval(() => {
+            forceFlipAnimation = true;
+            renderDashboard();
+        }, 30000);
+
+        // 1-Second Master Refresh
+        window.onload = function() {
             updateHeader();
             renderDashboard();
-        }
-
-        // Initialize dashboard on window load
-        window.onload = function() {
-            tick();
-            setInterval(tick, 1000); // 1-second refresh rate
+            setInterval(() => {
+                updateHeader();
+                renderDashboard();
+            }, 1000);
         };
     </script>
 </body>
