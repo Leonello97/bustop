@@ -193,12 +193,12 @@
       color: #58a6ff;
     }
 
-    /* LARGHEZZE COLONNE SERRATE SENZA SPAZI VUOTI CORRIDOIO */
-    .col-route { width: 10%; }
-    .col-dest  { width: 38%; }
-    .col-dep   { width: 18%; }
-    .col-arr   { width: 18%; }
-    .col-eta   { width: 16%; text-align: right; }
+    /* LARGHEZZE COLONNE PERFETTAMENTE RIANCORATE */
+    .col-route { width: 15%; }
+    .col-dest  { width: 35%; }
+    .col-dep   { width: 16%; }
+    .col-arr   { width: 16%; }
+    .col-eta   { width: 18%; text-align: right; }
 
   </style>
 </head>
@@ -231,10 +231,10 @@
   <!-- MAIN BOARDS -->
   <div class="board-container">
     
-    <!-- INBOUND PANEL (Solo 970 e 970X) -->
+    <!-- UPPER PANEL (Ex Inbound) -->
     <div class="panel panel-inbound">
       <div class="panel-title">
-        <span>INBOUND / STOP 16812 (WILUNA ST)</span>
+        <span>WILUNA ST</span>
         <span style="color: #58a6ff;">TO PERTH BUSPORT</span>
       </div>
       <table class="display-table">
@@ -251,11 +251,11 @@
       </table>
     </div>
 
-    <!-- OUTBOUND PANEL -->
+    <!-- LOWER PANEL (Ex Outbound) -->
     <div class="panel panel-outbound">
       <div class="panel-title">
-        <span>OUTBOUND / FROM PERTH BUSPORT</span>
-        <span style="color: #8b949e;">TO HOME (16813 / 12355)</span>
+        <span>FROM PERTH BUSPORT</span>
+        <span style="color: #8b949e;">TO HOME</span>
       </div>
       <table class="display-table">
         <thead>
@@ -273,7 +273,7 @@
   </div>
 
   <script>
-    // --- TIMETABLES DI TRANSPERTH (INBOUND 970/970X & OUTBOUND MULTI) ---
+    // --- TIMETABLES TRANSPERTH ---
     const inboundSchedules = [
       "05:15", "05:45", "06:12", "06:32", "06:52", "07:12", "07:27", "07:42", "07:57",
       "08:12", "08:27", "08:42", "08:57", "09:12", "09:27", "09:42", "10:00",
@@ -321,12 +321,17 @@
 
     let triggerFlipAnimation = false;
 
-    // Crea tessere girevoli senza tessere vuote in eccesso
-    function createSplitTile(text, isBlue = false) {
+    // Genera le tessere garantendo la lunghezza esatta specificata
+    function createSplitTile(text, targetLength, isBlue = false) {
       const container = document.createElement('div');
       container.className = 'tile-group';
       
-      text.toString().split('').forEach(char => {
+      let str = text.toString();
+      if (targetLength && str.length < targetLength) {
+        str = str.padStart(targetLength, ' ');
+      }
+      
+      str.split('').forEach(char => {
         const tile = document.createElement('div');
         tile.className = `tile-char ${isBlue ? 'tile-blue' : ''} ${triggerFlipAnimation ? 'flipping' : ''}`;
         tile.textContent = char;
@@ -335,13 +340,25 @@
       return container;
     }
 
-    // Calcola l'orario di arrivo stimato (+11 minuti di percorrenza)
     function calculateArrival(timeStr) {
       const [h, m] = timeStr.split(':').map(Number);
       let totalMins = h * 60 + m + 11;
       let arrH = Math.floor(totalMins / 60) % 24;
       let arrM = totalMins % 60;
       return `${String(arrH).padStart(2, '0')}:${String(arrM).padStart(2, '0')}`;
+    }
+
+    // Formatta l'attesa su 6 tessere fisse senza zeri di riempimento inutili (tessere vuote se non servono)
+    function formatEtaFixed(diffMinutes) {
+      const hrs = Math.floor(diffMinutes / 60);
+      const mins = diffMinutes % 60;
+      const mStr = String(mins).padStart(2, '0') + 'm';
+      
+      if (hrs > 0) {
+        return `${hrs}h${mStr}`;
+      } else {
+        return mStr;
+      }
     }
 
     function updateHeaderAndWeather() {
@@ -351,11 +368,9 @@
       const seconds = String(now.getSeconds()).padStart(2, '0');
       document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
 
-      // Giorno per esteso in Inglese (es. SUNDAY, 25 OCT 2026)
       const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' };
       document.getElementById('date').textContent = now.toLocaleDateString('en-GB', options).toUpperCase();
 
-      // LOGICA METEO DINAMICA (Mattina/Sera -> Prossima Fascia)
       const isAM = now.getHours() < 12;
 
       if (isAM) {
@@ -381,7 +396,7 @@
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-      // INBOUND RENDER (Mostra solo 970 / 970X con Proiezione Giorno Successivo se terminati)
+      // INBOUND RENDER (4 tessere fisse per colonna BUS)
       const inboundBody = document.getElementById('inbound-body');
       inboundBody.innerHTML = '';
 
@@ -391,7 +406,6 @@
         return { timeStr, diff: busMinutes - currentMinutes, isTomorrow: false };
       }).filter(item => item.diff >= 0);
 
-      // Se non ci sono più bus oggi, proietta quelli di domani mattina
       if (upcomingInbound.length === 0) {
         upcomingInbound = inboundSchedules.slice(0, 3).map(timeStr => {
           const [h, m] = timeStr.split(':').map(Number);
@@ -404,28 +418,26 @@
         const row = document.createElement('tr');
         row.className = 'display-row';
 
-        // EVIDENZIAZIONE ROSSA SOLTANTO SULLA PRIMA RIGA INBOUND SE <= 10 MIN
         if (index === 0 && item.diff <= 10 && !item.isTomorrow) {
           row.classList.add('inbound-warning');
         }
 
         const tdRoute = document.createElement('td');
-        tdRoute.appendChild(createSplitTile("970", true));
+        tdRoute.appendChild(createSplitTile("970 ", 4, true));
 
         const tdDest = document.createElement('td');
-        tdDest.appendChild(createSplitTile("PERTH BUSPORT"));
+        tdDest.appendChild(createSplitTile("PERTH BUSPORT", 13));
 
         const tdDep = document.createElement('td');
-        tdDep.appendChild(createSplitTile(item.timeStr));
+        tdDep.appendChild(createSplitTile(item.timeStr, 5));
 
         const tdArr = document.createElement('td');
-        tdArr.appendChild(createSplitTile(calculateArrival(item.timeStr)));
+        tdArr.appendChild(createSplitTile(calculateArrival(item.timeStr), 5));
 
         const tdEta = document.createElement('td');
         tdEta.style.textAlign = 'right';
-        
-        let etaText = item.diff >= 60 ? `${Math.floor(item.diff/60)}h ${item.diff%60}m` : `${item.diff}m`;
-        tdEta.appendChild(createSplitTile(etaText));
+        // 6 tessere fisse: se manca meno di un'ora lascia le prime tessere vuote
+        tdEta.appendChild(createSplitTile(formatEtaFixed(item.diff), 6));
 
         row.appendChild(tdRoute);
         row.appendChild(tdDest);
@@ -435,7 +447,7 @@
         inboundBody.appendChild(row);
       });
 
-      // OUTBOUND RENDER (Destinazione HOME per 970 e DOG SWAMP per gli altri)
+      // OUTBOUND RENDER
       const outboundBody = document.getElementById('outbound-body');
       outboundBody.innerHTML = '';
 
@@ -445,7 +457,6 @@
         return { ...item, diff: busMinutes - currentMinutes, isTomorrow: false };
       }).filter(item => item.diff >= 0);
 
-      // Se non ci sono più bus stasera, proietta quelli di domani mattina
       if (upcomingOutbound.length === 0) {
         upcomingOutbound = outboundSchedules.slice(0, 3).map(item => {
           const [h, m] = item.time.split(':').map(Number);
@@ -459,21 +470,20 @@
         row.className = 'display-row';
 
         const tdRoute = document.createElement('td');
-        tdRoute.appendChild(createSplitTile(item.route, true));
+        let routeText = item.route.length === 3 ? item.route + ' ' : item.route;
+        tdRoute.appendChild(createSplitTile(routeText, 4, true));
 
         const tdDest = document.createElement('td');
-        // Allineamento rigido: HOME viene riempito con tessere vuote fino a 9 caratteri (uguale a DOG SWAMP)
         let destText = (item.route === "970" || item.route === "970X") ? "HOME     " : "DOG SWAMP";
-        tdDest.appendChild(createSplitTile(destText));
+        tdDest.appendChild(createSplitTile(destText, 9));
 
         const tdDep = document.createElement('td');
-        tdDep.appendChild(createSplitTile(item.time));
+        tdDep.appendChild(createSplitTile(item.time, 5));
 
         const tdEta = document.createElement('td');
         tdEta.style.textAlign = 'right';
-        
-        let etaText = item.diff >= 60 ? `${Math.floor(item.diff/60)}h ${item.diff%60}m` : `${item.diff}m`;
-        tdEta.appendChild(createSplitTile(etaText));
+        // 6 tessere fisse con tessere vuote se senza ore
+        tdEta.appendChild(createSplitTile(formatEtaFixed(item.diff), 6));
 
         row.appendChild(tdRoute);
         row.appendChild(tdDest);
@@ -482,16 +492,13 @@
         outboundBody.appendChild(row);
       });
 
-      // Resetta il flag dell'animazione
       triggerFlipAnimation = false;
     }
 
-    // Timer animazione rotazione tessere ogni 30 secondi
     setInterval(() => {
       triggerFlipAnimation = true;
     }, 30000);
 
-    // Loop principale di aggiornamento ogni secondo
     setInterval(() => {
       updateHeaderAndWeather();
       renderTables();
