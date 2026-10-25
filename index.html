@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Transperth Split-Flap Display</title>
+  <title>Transperth Kiosk Dashboard</title>
   <style>
     * {
       box-sizing: border-box;
@@ -14,7 +14,7 @@
       background-color: #0b0e14;
       color: #e0e6ed;
       font-family: 'Courier New', Courier, monospace;
-      padding: 15px;
+      padding: 16px;
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -30,40 +30,42 @@
       align-items: center;
       background: #161b22;
       border: 2px solid #30363d;
-      border-radius: 8px;
-      padding: 10px 20px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      padding: 12px 24px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .header-left {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 16px;
     }
     .header-right {
       text-align: right;
     }
     .weather-temp {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: bold;
       color: #58a6ff;
     }
     .clock {
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: bold;
       color: #f5a623;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
     }
     .date {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       color: #8b949e;
       text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     /* BOARDS */
     .board-container {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       flex-grow: 1;
     }
 
@@ -71,9 +73,10 @@
       background: #11141a;
       border: 2px solid #21262d;
       border-radius: 10px;
-      padding: 12px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
     }
 
     .panel-inbound {
@@ -81,14 +84,14 @@
     }
 
     .panel-outbound {
-      flex: 1.8; /* Doppio spazio per le uscite dal Busport */
+      flex: 1.8;
     }
 
     .panel-title {
       font-size: 0.95rem;
       font-weight: bold;
       color: #8b949e;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       letter-spacing: 1.5px;
       display: flex;
       justify-content: space-between;
@@ -105,8 +108,9 @@
       text-align: left;
       font-size: 0.75rem;
       color: #6e7681;
-      padding-bottom: 4px;
+      padding-bottom: 6px;
       letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
     .display-row {
@@ -119,18 +123,20 @@
     .display-row.warning-row {
       background: #3c1218 !important;
       border: 1px solid #da3633 !important;
+      box-shadow: 0 0 10px rgba(218, 54, 51, 0.3);
     }
     .display-row.warning-row .tile-char {
       background: #5a1d22 !important;
       color: #ff7b72 !important;
       border-color: #8e292d !important;
+      text-shadow: 0 0 4px rgba(255, 123, 114, 0.6);
     }
 
     /* STILE TESSERE GIREVOLI (SPLIT-FLAP RÉTRO) */
     .tile-group {
       display: inline-flex;
       gap: 3px;
-      padding: 3px 0;
+      padding: 4px 0;
     }
 
     .tile-char {
@@ -147,7 +153,7 @@
       border-radius: 4px;
       border: 1px solid #30363d;
       box-shadow: inset 0 1px 2px rgba(255,255,255,0.1), 0 2px 4px rgba(0,0,0,0.5);
-      text-shadow: 0 0 2px rgba(245, 166, 35, 0.4);
+      text-shadow: 0 0 3px rgba(245, 166, 35, 0.4);
     }
 
     /* Linea di incisione centrale meccano-digitale */
@@ -158,13 +164,21 @@
       left: 0;
       width: 100%;
       height: 1px;
-      background: rgba(0, 0, 0, 0.6);
-      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.65);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .tile-blue {
       color: #58a6ff;
-      text-shadow: 0 0 2px rgba(88, 166, 255, 0.4);
+      text-shadow: 0 0 3px rgba(88, 166, 255, 0.4);
+    }
+
+    .empty-message {
+      padding: 12px 0;
+      color: #6e7681;
+      font-size: 0.85rem;
+      text-align: center;
+      letter-spacing: 2px;
     }
 
     .col-route { width: 15%; }
@@ -180,7 +194,7 @@
   <div class="header">
     <div class="header-left">
       <div class="weather-temp">22°C ☀️</div>
-      <div style="font-size: 0.8rem; color: #8b949e;">PERTH WA</div>
+      <div style="font-size: 0.8rem; color: #8b949e; letter-spacing: 1px;">PERTH WA</div>
     </div>
     <div class="header-right">
       <div class="clock" id="clock">--:--:--</div>
@@ -236,51 +250,95 @@
   </div>
 
   <script>
-    // --- TABELLE ORARIE UFFICIALI STATICHE ---
-    // Inbound: Stop 16812 -> Perth Busport (Linea 970 / 970X)
-    const inboundSchedules = [
-      "05:42", "06:12", "06:32", "06:52", "07:12", "07:27", "07:42", "07:57",
-      "08:12", "08:27", "08:42", "08:57", "09:12", "09:27", "09:42", "10:00",
-      "10:15", "10:30", "10:45", "11:00", "11:15", "11:30", "11:45", "12:00",
-      "12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45", "14:00",
-      "14:15", "14:30", "14:45", "15:00", "15:15", "15:30", "15:45", "16:00",
-      "16:15", "16:30", "16:45", "17:00", "17:15", "17:30", "17:45", "18:00",
-      "18:20", "18:40", "19:00", "19:30", "20:00", "20:30", "21:30", "22:30"
-    ];
+    // --- SCHEDULES DATA ---
 
-    // Outbound: Perth Busport -> Stop 16813 / 12355 (Linee 384, 386, 388, 389, 970)
-    const outboundSchedules = [
-      { route: "389", time: "06:15" }, { route: "386", time: "06:30" },
-      { route: "970", time: "06:45" }, { route: "388", time: "07:00" },
-      { route: "384", time: "07:15" }, { route: "970", time: "07:30" },
-      { route: "389", time: "07:45" }, { route: "386", time: "08:00" },
-      { route: "970", time: "08:15" }, { route: "388", time: "08:30" },
-      { route: "384", time: "08:45" }, { route: "970", time: "09:00" },
-      { route: "389", time: "09:15" }, { route: "386", time: "09:30" },
-      { route: "970", time: "09:45" }, { route: "388", time: "10:00" },
-      { route: "970", time: "10:15" }, { route: "384", time: "10:30" },
-      { route: "970", time: "10:45" }, { route: "389", time: "11:00" },
-      { route: "970", time: "11:15" }, { route: "386", time: "11:30" },
-      { route: "970", time: "11:45" }, { route: "388", time: "12:00" },
-      { route: "970", time: "12:15" }, { route: "384", time: "12:30" },
-      { route: "970", time: "12:45" }, { route: "389", time: "13:00" },
-      { route: "970", time: "13:15" }, { route: "386", time: "13:30" },
-      { route: "970", time: "13:45" }, { route: "388", time: "14:00" },
-      { route: "970", time: "14:15" }, { route: "384", time: "14:30" },
-      { route: "970", time: "14:45" }, { route: "389", time: "15:00" },
-      { route: "970", time: "15:15" }, { route: "386", time: "15:30" },
-      { route: "970", time: "15:45" }, { route: "388", time: "16:00" },
-      { route: "970", time: "16:15" }, { route: "384", time: "16:30" },
-      { route: "970", time: "16:45" }, { route: "389", time: "17:00" },
-      { route: "970", time: "17:15" }, { route: "386", time: "17:30" },
-      { route: "970", time: "17:45" }, { route: "388", time: "18:00" },
-      { route: "970", time: "18:15" }, { route: "384", time: "18:30" },
-      { route: "970", time: "18:45" }, { route: "389", time: "19:00" },
-      { route: "970", time: "19:30" }, { route: "386", time: "20:00" },
-      { route: "970", time: "20:30" }, { route: "388", time: "21:00" },
-      { route: "970", time: "21:30" }, { route: "386", time: "22:00" },
-      { route: "970", time: "22:30" }, { route: "389", time: "23:15" }
-    ];
+    // INBOUND: Stop 16812 -> Perth Busport (970 / 970X)
+    const inboundSchedules = {
+      weekday: [
+        "05:42", "06:12", "06:32", "06:52", "07:12", "07:27", "07:42", "07:57",
+        "08:12", "08:27", "08:42", "08:57", "09:12", "09:27", "09:42", "10:00",
+        "10:15", "10:30", "10:45", "11:00", "11:15", "11:30", "11:45", "12:00",
+        "12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45", "14:00",
+        "14:15", "14:30", "14:45", "15:00", "15:15", "15:30", "15:45", "16:00",
+        "16:15", "16:30", "16:45", "17:00", "17:15", "17:30", "17:45", "18:00",
+        "18:20", "18:40", "19:00", "19:30", "20:00", "20:30", "21:30", "22:30"
+      ],
+      saturday: [
+        "06:30", "07:00", "07:30", "08:00", "08:30", "09:00", "09:20", "09:40",
+        "10:00", "10:15", "10:30", "10:45", "11:00", "11:15", "11:30", "11:45",
+        "12:00", "12:15", "12:30", "12:45", "13:00", "13:15", "13:30", "13:45",
+        "14:00", "14:15", "14:30", "14:45", "15:00", "15:15", "15:30", "15:45",
+        "16:00", "16:15", "16:30", "16:45", "17:00", "17:20", "17:40", "18:00",
+        "18:30", "19:00", "19:30", "20:00", "20:30", "21:30", "22:30", "23:30"
+      ],
+      sunday: [
+        "07:30", "08:30", "09:15", "09:45", "10:15", "10:45", "11:15", "11:45",
+        "12:15", "12:45", "13:15", "13:45", "14:15", "14:45", "15:15", "15:45",
+        "16:15", "16:45", "17:15", "17:45", "18:15", "18:45", "19:30", "20:30",
+        "21:30", "22:30"
+      ]
+    };
+
+    // OUTBOUND: Perth Busport -> Stop 16813 / 12355 (Linee 384, 386, 388, 389, 970)
+    const outboundSchedules = {
+      weekday: [
+        { route: "389", time: "06:15" }, { route: "386", time: "06:30" }, { route: "970", time: "06:45" },
+        { route: "388", time: "07:00" }, { route: "384", time: "07:15" }, { route: "970", time: "07:30" },
+        { route: "389", time: "07:45" }, { route: "386", time: "08:00" }, { route: "970", time: "08:15" },
+        { route: "388", time: "08:30" }, { route: "384", time: "08:45" }, { route: "970", time: "09:00" },
+        { route: "389", time: "09:15" }, { route: "386", time: "09:30" }, { route: "970", time: "09:45" },
+        { route: "388", time: "10:00" }, { route: "970", time: "10:15" }, { route: "384", time: "10:30" },
+        { route: "970", time: "10:45" }, { route: "389", time: "11:00" }, { route: "970", time: "11:15" },
+        { route: "386", time: "11:30" }, { route: "970", time: "11:45" }, { route: "388", time: "12:00" },
+        { route: "970", time: "12:15" }, { route: "384", time: "12:30" }, { route: "970", time: "12:45" },
+        { route: "389", time: "13:00" }, { route: "970", time: "13:15" }, { route: "386", time: "13:30" },
+        { route: "970", time: "13:45" }, { route: "388", time: "14:00" }, { route: "970", time: "14:15" },
+        { route: "384", time: "14:30" }, { route: "970", time: "14:45" }, { route: "389", time: "15:00" },
+        { route: "970", time: "15:15" }, { route: "386", time: "15:30" }, { route: "970", time: "15:45" },
+        { route: "388", time: "16:00" }, { route: "970", time: "16:15" }, { route: "384", time: "16:30" },
+        { route: "970", time: "16:45" }, { route: "389", time: "17:00" }, { route: "970", time: "17:15" },
+        { route: "386", time: "17:30" }, { route: "970", time: "17:45" }, { route: "388", time: "18:00" },
+        { route: "970", time: "18:15" }, { route: "384", time: "18:30" }, { route: "970", time: "18:45" },
+        { route: "389", time: "19:00" }, { route: "970", time: "19:30" }, { route: "386", time: "20:00" },
+        { route: "970", time: "20:30" }, { route: "388", time: "21:00" }, { route: "970", time: "21:30" },
+        { route: "386", time: "22:00" }, { route: "970", time: "22:30" }, { route: "389", time: "23:15" }
+      ],
+      saturday: [
+        { route: "389", time: "07:15" }, { route: "970", time: "07:45" }, { route: "386", time: "08:15" },
+        { route: "970", time: "08:45" }, { route: "388", time: "09:15" }, { route: "970", time: "09:45" },
+        { route: "389", time: "10:15" }, { route: "970", time: "10:45" }, { route: "386", time: "11:15" },
+        { route: "970", time: "11:45" }, { route: "388", time: "12:15" }, { route: "970", time: "12:45" },
+        { route: "389", time: "13:15" }, { route: "970", time: "13:45" }, { route: "386", time: "14:15" },
+        { route: "970", time: "14:45" }, { route: "388", time: "15:15" }, { route: "970", time: "15:45" },
+        { route: "389", time: "16:15" }, { route: "970", time: "16:45" }, { route: "386", time: "17:15" },
+        { route: "970", time: "17:45" }, { route: "388", time: "18:15" }, { route: "970", time: "18:45" },
+        { route: "389", time: "19:15" }, { route: "970", time: "19:45" }, { route: "386", time: "20:15" },
+        { route: "970", time: "20:45" }, { route: "388", time: "21:15" }, { route: "970", time: "21:45" },
+        { route: "386", time: "22:15" }, { route: "970", time: "22:45" }, { route: "389", time: "23:15" },
+        { route: "970", time: "23:45" }
+      ],
+      sunday: [
+        { route: "389", time: "08:15" }, { route: "970", time: "08:45" }, { route: "386", time: "09:15" },
+        { route: "970", time: "09:45" }, { route: "388", time: "10:15" }, { route: "970", time: "10:45" },
+        { route: "389", time: "11:15" }, { route: "970", time: "11:45" }, { route: "386", time: "12:15" },
+        { route: "970", time: "12:45" }, { route: "388", time: "13:15" }, { route: "970", time: "13:45" },
+        { route: "389", time: "14:15" }, { route: "970", time: "14:45" }, { route: "386", time: "15:15" },
+        { route: "970", time: "15:45" }, { route: "388", time: "16:15" }, { route: "970", time: "16:45" },
+        { route: "389", time: "17:15" }, { route: "970", time: "17:45" }, { route: "386", time: "18:15" },
+        { route: "970", time: "18:45" }, { route: "389", time: "19:15" }, { route: "970", time: "19:45" },
+        { route: "386", time: "20:15" }, { route: "970", time: "20:45" }, { route: "388", time: "21:15" },
+        { route: "970", time: "21:45" }, { route: "386", time: "22:15" }, { route: "970", time: "22:45" },
+        { route: "970", time: "23:05" }, { route: "389", time: "23:15" }, { route: "970", time: "23:30" },
+        { route: "386", time: "23:45" }
+      ]
+    };
+
+    function getDayKey(date) {
+      const day = date.getDay();
+      if (day === 0) return 'sunday';
+      if (day === 6) return 'saturday';
+      return 'weekday';
+    }
 
     function createSplitTile(text, isBlue = false) {
       const container = document.createElement('div');
@@ -309,84 +367,99 @@
     function renderTables() {
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const dayKey = getDayKey(now);
 
       // INBOUND RENDER (Mostra le prossime 3 corse)
       const inboundBody = document.getElementById('inbound-body');
       inboundBody.innerHTML = '';
       
-      const upcomingInbound = inboundSchedules.map(timeStr => {
+      const currentInboundList = inboundSchedules[dayKey] || inboundSchedules.weekday;
+      const upcomingInbound = currentInboundList.map(timeStr => {
         const [h, m] = timeStr.split(':').map(Number);
         const busMinutes = h * 60 + m;
         return { timeStr, diff: busMinutes - currentMinutes };
       }).filter(item => item.diff >= 0).slice(0, 3);
 
-      upcomingInbound.forEach((item, index) => {
+      if (upcomingInbound.length === 0) {
         const row = document.createElement('tr');
-        row.className = 'display-row';
-
-        // Evidenziazione rossa per la prima riga se <= 10 min
-        if (index === 0 && item.diff <= 10) {
-          row.classList.add('warning-row');
-        }
-
-        const tdRoute = document.createElement('td');
-        tdRoute.appendChild(createSplitTile("970", true));
-
-        const tdDest = document.createElement('td');
-        tdDest.appendChild(createSplitTile("PERTH BUSPORT"));
-
-        const tdTime = document.createElement('td');
-        tdTime.appendChild(createSplitTile(item.timeStr));
-
-        const tdEta = document.createElement('td');
-        tdEta.style.textAlign = 'right';
-        tdEta.appendChild(createSplitTile(`${item.diff}m`));
-
-        row.appendChild(tdRoute);
-        row.appendChild(tdDest);
-        row.appendChild(tdTime);
-        row.appendChild(tdEta);
+        row.innerHTML = `<td colspan="4" class="empty-message">NO MORE BUSES TODAY FOR STOP 16812</td>`;
         inboundBody.appendChild(row);
-      });
+      } else {
+        upcomingInbound.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.className = 'display-row';
+
+          // Evidenziazione rossa per la prima riga se <= 10 min
+          if (index === 0 && item.diff <= 10) {
+            row.classList.add('warning-row');
+          }
+
+          const tdRoute = document.createElement('td');
+          tdRoute.appendChild(createSplitTile("970", true));
+
+          const tdDest = document.createElement('td');
+          tdDest.appendChild(createSplitTile("PERTH BUSPORT"));
+
+          const tdTime = document.createElement('td');
+          tdTime.appendChild(createSplitTile(item.timeStr));
+
+          const tdEta = document.createElement('td');
+          tdEta.style.textAlign = 'right';
+          tdEta.appendChild(createSplitTile(`${item.diff}m`));
+
+          row.appendChild(tdRoute);
+          row.appendChild(tdDest);
+          row.appendChild(tdTime);
+          row.appendChild(tdEta);
+          inboundBody.appendChild(row);
+        });
+      }
 
       // OUTBOUND RENDER (Mostra le prossime 5 corse)
       const outboundBody = document.getElementById('outbound-body');
       outboundBody.innerHTML = '';
 
-      const upcomingOutbound = outboundSchedules.map(item => {
+      const currentOutboundList = outboundSchedules[dayKey] || outboundSchedules.weekday;
+      const upcomingOutbound = currentOutboundList.map(item => {
         const [h, m] = item.time.split(':').map(Number);
         const busMinutes = h * 60 + m;
         return { ...item, diff: busMinutes - currentMinutes };
       }).filter(item => item.diff >= 0).slice(0, 5);
 
-      upcomingOutbound.forEach((item, index) => {
+      if (upcomingOutbound.length === 0) {
         const row = document.createElement('tr');
-        row.className = 'display-row';
-
-        // Evidenziazione rossa per la prima riga se <= 10 min
-        if (index === 0 && item.diff <= 10) {
-          row.classList.add('warning-row');
-        }
-
-        const tdRoute = document.createElement('td');
-        tdRoute.appendChild(createSplitTile(item.route, true));
-
-        const tdDest = document.createElement('td');
-        tdDest.appendChild(createSplitTile("DOG SWAMP / HOME"));
-
-        const tdTime = document.createElement('td');
-        tdTime.appendChild(createSplitTile(item.time));
-
-        const tdEta = document.createElement('td');
-        tdEta.style.textAlign = 'right';
-        tdEta.appendChild(createSplitTile(`${item.diff}m`));
-
-        row.appendChild(tdRoute);
-        row.appendChild(tdDest);
-        row.appendChild(tdTime);
-        row.appendChild(tdEta);
+        row.innerHTML = `<td colspan="4" class="empty-message">NO MORE BUSES TODAY FROM BUSPORT</td>`;
         outboundBody.appendChild(row);
-      });
+      } else {
+        upcomingOutbound.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.className = 'display-row';
+
+          // Evidenziazione rossa per la prima riga se <= 10 min
+          if (index === 0 && item.diff <= 10) {
+            row.classList.add('warning-row');
+          }
+
+          const tdRoute = document.createElement('td');
+          tdRoute.appendChild(createSplitTile(item.route, true));
+
+          const tdDest = document.createElement('td');
+          tdDest.appendChild(createSplitTile("DOG SWAMP / HOME"));
+
+          const tdTime = document.createElement('td');
+          tdTime.appendChild(createSplitTile(item.time));
+
+          const tdEta = document.createElement('td');
+          tdEta.style.textAlign = 'right';
+          tdEta.appendChild(createSplitTile(`${item.diff}m`));
+
+          row.appendChild(tdRoute);
+          row.appendChild(tdDest);
+          row.appendChild(tdTime);
+          row.appendChild(tdEta);
+          outboundBody.appendChild(row);
+        });
+      }
     }
 
     // Inizializzazione e aggiornamento continuo ogni secondo
