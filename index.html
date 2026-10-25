@@ -112,11 +112,12 @@
       justify-content: space-between;
     }
 
-    /* TABLES & ALIGNMENT */
+    /* TABLES & PERFECT ALIGNMENT */
     .display-table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0 6px;
+      table-layout: fixed; /* Mantiene la griglia delle colonne perfettamente rigida */
     }
 
     .display-table th {
@@ -133,7 +134,7 @@
       padding: 2px 0;
     }
 
-    /* EVIDENZIAZIONE ROSSA SOLTANTO PER INBOUND <= 10 MINUTI */
+    /* EVIDENZIAZIONE ROSSA PER INBOUND <= 10 MINUTI */
     .display-row.inbound-warning {
       background: #3c1218 !important;
       border: 1px solid #da3633 !important;
@@ -178,7 +179,6 @@
       background: rgba(0, 0, 0, 0.7);
     }
 
-    /* Animazione Flap ogni 30 secondi */
     .tile-char.flipping {
       animation: flipTile 0.5s ease-in-out;
     }
@@ -193,11 +193,11 @@
       color: #58a6ff;
     }
 
-    /* LARGHEZZE COLONNE PERFETTAMENTE RIANCORATE */
-    .col-route { width: 15%; }
-    .col-dest  { width: 35%; }
-    .col-dep   { width: 16%; }
-    .col-arr   { width: 16%; }
+    /* LARGHEZZE COLONNE IDENTICHE PER I DUE TABELLONI (ALLINEAMENTO VERTICALE PERFETTO) */
+    .col-route { width: 14%; }
+    .col-dest  { width: 32%; }
+    .col-dep   { width: 18%; }
+    .col-arr   { width: 18%; }
     .col-eta   { width: 18%; text-align: right; }
 
   </style>
@@ -231,10 +231,10 @@
   <!-- MAIN BOARDS -->
   <div class="board-container">
     
-    <!-- UPPER PANEL (Ex Inbound) -->
+    <!-- UPPER PANEL (WILUNA ST -> BUSPORT) -->
     <div class="panel panel-inbound">
       <div class="panel-title">
-        <span>WILUNA ST</span>
+        <span>FROM WILUNA ST</span>
         <span style="color: #58a6ff;">TO PERTH BUSPORT</span>
       </div>
       <table class="display-table">
@@ -251,7 +251,7 @@
       </table>
     </div>
 
-    <!-- LOWER PANEL (Ex Outbound) -->
+    <!-- LOWER PANEL (BUSPORT -> HOME) -->
     <div class="panel panel-outbound">
       <div class="panel-title">
         <span>FROM PERTH BUSPORT</span>
@@ -263,6 +263,7 @@
             <th class="col-route">BUS</th>
             <th class="col-dest">DESTINATION</th>
             <th class="col-dep">PARTENZA</th>
+            <th class="col-arr" style="visibility: hidden;">ARRIVO BUSPORT</th> <!-- Colonna invisibile per mantenere la struttura perfetta -->
             <th class="col-eta" style="text-align: right;">ATTESA</th>
           </tr>
         </thead>
@@ -321,14 +322,14 @@
 
     let triggerFlipAnimation = false;
 
-    // Genera le tessere garantendo la lunghezza esatta specificata
-    function createSplitTile(text, targetLength, isBlue = false) {
+    // Genera tessere con riempimento di spazi a sinistra per l'attesa o a destra per il testo
+    function createSplitTile(text, targetLength, isBlue = false, padLeft = false) {
       const container = document.createElement('div');
       container.className = 'tile-group';
       
       let str = text.toString();
       if (targetLength && str.length < targetLength) {
-        str = str.padStart(targetLength, ' ');
+        str = padLeft ? str.padStart(targetLength, ' ') : str.padEnd(targetLength, ' ');
       }
       
       str.split('').forEach(char => {
@@ -348,7 +349,7 @@
       return `${String(arrH).padStart(2, '0')}:${String(arrM).padStart(2, '0')}`;
     }
 
-    // Formatta l'attesa su 6 tessere fisse senza zeri di riempimento inutili (tessere vuote se non servono)
+    // Formatta l'attesa rigorosamente a 5 tessere (es. " 8m" o "5h30m")
     function formatEtaFixed(diffMinutes) {
       const hrs = Math.floor(diffMinutes / 60);
       const mins = diffMinutes % 60;
@@ -396,7 +397,7 @@
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-      // INBOUND RENDER (4 tessere fisse per colonna BUS)
+      // UPPER PANEL RENDER (WILUNA ST -> BUSPORT)
       const inboundBody = document.getElementById('inbound-body');
       inboundBody.innerHTML = '';
 
@@ -436,8 +437,8 @@
 
         const tdEta = document.createElement('td');
         tdEta.style.textAlign = 'right';
-        // 6 tessere fisse: se manca meno di un'ora lascia le prime tessere vuote
-        tdEta.appendChild(createSplitTile(formatEtaFixed(item.diff), 6));
+        // ATTESA: Esattamente 5 tessere fisse (padLeft = true per allineamento a destra)
+        tdEta.appendChild(createSplitTile(formatEtaFixed(item.diff), 5, false, true));
 
         row.appendChild(tdRoute);
         row.appendChild(tdDest);
@@ -447,7 +448,7 @@
         inboundBody.appendChild(row);
       });
 
-      // OUTBOUND RENDER
+      // LOWER PANEL RENDER (BUSPORT -> HOME)
       const outboundBody = document.getElementById('outbound-body');
       outboundBody.innerHTML = '';
 
@@ -474,20 +475,24 @@
         tdRoute.appendChild(createSplitTile(routeText, 4, true));
 
         const tdDest = document.createElement('td');
-        let destText = (item.route === "970" || item.route === "970X") ? "HOME     " : "DOG SWAMP";
+        let destText = (item.route === "970" || item.route === "970X") ? "HOME" : "DOG SWAMP";
         tdDest.appendChild(createSplitTile(destText, 9));
 
         const tdDep = document.createElement('td');
         tdDep.appendChild(createSplitTile(item.time, 5));
 
+        // Colonna fittizia per allineare PARTENZA direttamente sotto PARTENZA del pannello superiore
+        const tdPlaceholder = document.createElement('td');
+
         const tdEta = document.createElement('td');
         tdEta.style.textAlign = 'right';
-        // 6 tessere fisse con tessere vuote se senza ore
-        tdEta.appendChild(createSplitTile(formatEtaFixed(item.diff), 6));
+        // ATTESA: Esattamente 5 tessere fisse (padLeft = true)
+        tdEta.appendChild(createSplitTile(formatEtaFixed(item.diff), 5, false, true));
 
         row.appendChild(tdRoute);
         row.appendChild(tdDest);
         row.appendChild(tdDep);
+        row.appendChild(tdPlaceholder);
         row.appendChild(tdEta);
         outboundBody.appendChild(row);
       });
